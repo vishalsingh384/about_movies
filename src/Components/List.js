@@ -96,6 +96,8 @@ export default class List extends Component {
                     </div>
                     ))
                 }
+                </div>
+                <div className="pagination">
                 <nav aria-label="Page navigation example">
                   <ul class="pagination">
                     <li class="page-item">

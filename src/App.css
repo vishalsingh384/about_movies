@@ -109,20 +109,18 @@ body{
   display: flex;
   justify-content: center;
 }
+.pagination{
+  display: flex;
+  justify-content: center;
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+/*------------------------------------------------------------------*/
+.favourites-list{
+padding: 2rem;
+}
+.favourites-table{
+  padding: 2rem;
+}
 
 @media screen and (max-width:400px) {
   .banner-card{
