@@ -11,7 +11,8 @@ export default class List extends Component {
       hover:"",
       currPage:1,
       movies:[],
-      parr:[1]  //ab tak main konse page par hu , or what page result am i showing
+      parr:[1],  //ab tak main konse page par hu , or what page result am i showing
+      fav:[]
     }
   }
   handleEnter=(id)=>{
@@ -62,10 +63,33 @@ export default class List extends Component {
     // Because setState is async to as shown in next line, the fn gets called before setState finishes. So to ensure synchonouus behaviour, we can pass the function as callback fn in setState
     // this.changeMovies();-> this won't work because setState asyn hai. To jab tak wo hoga tab tak 99.99% of the time ye hoga ki, changeMovies() call ho jaayegi
   }
+  handleFavorites=(movieObj)=>{
+    let localStorageMovies=JSON.parse(localStorage.getItem("movies"))||[];
+    if(this.state.fav.includes(movieObj.id)){
+      localStorageMovies=localStorageMovies.filter((obj)=>{
+       return obj.id!=movieObj.id;
+    })
+    }
+    else{
+      localStorageMovies.push(movieObj);
+    }
+    localStorage.setItem("movies", JSON.stringify(localStorageMovies));
+    let tempData=localStorageMovies.map((movieObj)=>{
+      return movieObj.id;
+    });
+    this.setState({
+      fav:[...tempData]
+    });
+  }
   async componentDidMount(){
     let res=await axios.get(`https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&language=en-US&page=${this.state.currPage}`);
+    let localStorageMovies=JSON.parse(localStorage.getItem("movies"))||[];
+    let temp=localStorageMovies.map((movieObj)=>{
+      return movieObj.id;
+    })
     this.setState({
-      movies:[...res.data.results]
+      movies:[...res.data.results],
+      fav:[...temp]
     })
   }
   render() {
@@ -90,7 +114,9 @@ export default class List extends Component {
                             <h5 className="card-title movie-title">{movieObj. original_title}</h5>
                             <div className='button-wrapper'>
                               {this.state.hover==movieObj.id&&(
-                              <a href="#" className="btn btn-primary movie-button">Add to Favorites</a>
+                              <a className="btn btn-primary movie-button" onClick={()=>this.handleFavorites(movieObj)}>
+                                {this.state.fav.includes(movieObj.id)?"Remove to Favorites":"Add to Favorites"}
+                                </a>
                               )}
                             </div>
                     </div>

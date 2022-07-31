@@ -5,14 +5,84 @@ export default class Favourites extends Component {
     constructor(){
         super();
         this.state={
-            movies:[],
+            movies:[],//current movies in Local Storage
             genre:[],
-            currGenre:"All Genre"
+            currGenre:"All Genre",
+            currText:"",
+            limit:5,
+            currPage:1
         };
     }
 
+    handleCurrGenre=(genre)=>{
+        this.setState({
+            currGenre:genre
+        });
+    }
+
+    handleText=(e)=>{
+      this.setState({
+        currText:e.target.value
+      });
+    }
+    handlePageNum=(page)=>{
+        this.setState({
+            currPage:page
+        })
+    }
+    handleLimit=(e)=>{
+        this.setState({
+            limit:e.target.value
+        })
+    }
+    handleDelete=(id)=>{
+        let newMovies=this.state.movies.filter((movieObj)=>{
+            return movieObj.id!=id; 
+        });
+        this.setState({
+            movies:[...newMovies]
+        })
+        localStorage.setItem("movies",JSON.stringify(newMovies));
+    }
+    sortPopularityAsc=()=>{
+        let allMovies=this.state.movies;
+        allMovies.sort((objA,objB)=>{
+            return objA.popularity-objB.popularity;
+        });
+        this.setState({
+            movies:[...allMovies]
+        })
+    }
+    sortPopularityDesc=()=>{
+        let allMovies=this.state.movies;
+        allMovies.sort((objA,objB)=>{
+            return objB.popularity-objA.popularity;
+        });
+        this.setState({
+            movies:[...allMovies]
+        })
+    }
+    sortRatingAsc=()=>{
+        let allMovies=this.state.movies;
+        allMovies.sort((objA,objB)=>{
+            return objA.vote_average-objB.vote_average;
+        });
+        this.setState({
+            movies:[...allMovies]
+        })
+    }
+    sortRatingDesc=()=>{
+        let allMovies=this.state.movies;
+        allMovies.sort((objA,objB)=>{
+            return objB.vote_average-objA.vote_average;
+        });
+        this.setState({
+            movies:[...allMovies]
+        })
+    }
     componentDidMount=async()=>{
-        let ans=await axios.get(`https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&language=en-US&page=1`);
+        // let ans=await axios.get(`https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&language=en-US&page=1`);
+        let ans=JSON.parse(localStorage.getItem("movies"));
         let genreId = {
             28: "Action",
             12: "Adventure",
@@ -35,14 +105,14 @@ export default class Favourites extends Component {
             37: "Western",
           };
         let genreArr=[];
-        ans.data.results.map((movieObj)=>{
+        ans.map((movieObj)=>{
             if(!genreArr.includes(genreId[movieObj.genre_ids[0]])){
                 genreArr.push(genreId[movieObj.genre_ids[0]]);
             }
         });
         genreArr.unshift("All Genre");
         this.setState({
-            movies:[...ans.data.results],
+            movies:[...ans],
             genre:[...genreArr]
         });
     }
@@ -68,8 +138,32 @@ export default class Favourites extends Component {
             10752: "War",
             37: "Western",
           };
+
+    let filteredMovies=[];
+    if(this.state.currGenre!="All Genre"){
+        filteredMovies=this.state.movies.filter((movieObj)=>{
+            return genreId[movieObj.genre_ids[0]]==this.state.currGenre;
+        });
+    }else{
+        filteredMovies=this.state.movies;
+    }
+    if(this.state.currText!=""){
+        filteredMovies=filteredMovies.filter((movieObj)=>{
+            let movieName=movieObj.original_title.toLowerCase();
+            return movieName.includes(this.state.currText);//includes can be applied on strings, arrays
+        })
+    }
+    let numOfPages=Math.ceil(filteredMovies.length/this.state.limit);
+    // console.log(numOfPages);
+    let pagesArr=[];
+    for(let i=1;i<=numOfPages;i++){
+        pagesArr.push(i);
+    }
+    let si=(this.state.currPage-1)*(this.state.limit);
+    let ei=si+this.state.limit-1;
+    filteredMovies=filteredMovies.slice(si,ei+1);//slice automatically takes care of overflow
     return (
-      <div class="row" style={{border:"1px solid red"}}>
+      <div class="row"> 
         <div class="col-3 favourites-list">
           <ul class="list-group">
             {
@@ -79,7 +173,7 @@ export default class Favourites extends Component {
                             {genre}
                         </li>
                         :
-                        <li class="list-group-item" aria-current="true">
+                        <li class="list-group-item" aria-current="true" onClick={()=>this.handleCurrGenre(genre)}>
                             {genre}
                         </li>
                 ))
@@ -88,8 +182,8 @@ export default class Favourites extends Component {
         </div>
         <div class="col favourites-table">
             <div class="row">
-                <input type="text" placeholder="Search" className="col"/>
-                <input type="number" placeholder="5" className="col"/>
+                <input type="text" placeholder="Search" className="col-8" value={this.state.currText} onChange={this.handleText}/>
+                <input type="number" className="col" value={this.state.limit} onChange={this.handleLimit}/>
             </div>
             <div class="row">
                 <table class="table">
@@ -97,14 +191,20 @@ export default class Favourites extends Component {
                         <tr>
                         <th scope="col">Title</th>
                         <th scope="col">Genre</th>
-                        <th scope="col">Popularity</th>
-                        <th scope="col">Rating</th>
+                        <th scope="col">
+                            <i class="fa-solid fa-caret-up" onClick={this.sortPopularityAsc}></i>
+                            Popularity
+                            <i class="fa-solid fa-caret-down" onClick={this.sortPopularityDesc}></i></th>
+                        <th scope="col">
+                            <i class="fa-solid fa-caret-up" onClick={this.sortRatingAsc}></i>
+                            Rating
+                            <i class="fa-solid fa-caret-down" onClick={this.sortRatingDesc}></i></th>
                         <th scope="col"></th>
                         </tr>
                     </thead>
                         <tbody>
                             {
-                            this.state.movies.map((movieObj)=>(
+                            filteredMovies.map((movieObj)=>(
                                 <tr>
                                     <td scope="row">
                                         <img src={`https://image.tmdb.org/t/p/original${movieObj.backdrop_path}`} style={{width:"8rem"}}/>
@@ -113,7 +213,7 @@ export default class Favourites extends Component {
                                     <td>{genreId[movieObj.genre_ids[0]]}</td>
                                     <td>{movieObj.popularity}</td>
                                     <td>{movieObj.vote_average}</td>
-                                    <td><button class="btn btn-outline-danger">Delete</button></td>
+                                    <td><button class="btn btn-outline-danger" onClick={()=>this.handleDelete(movieObj.id)}>Delete</button></td>
                                 </tr>
                             ))
                         }
@@ -121,6 +221,16 @@ export default class Favourites extends Component {
                 </table>
             </div>
         </div>
+        <nav aria-label="Page navigation example">
+        <ul class="pagination">
+            {
+            pagesArr.map((page)=>(
+                <li class="page-item">
+                    <a class="page-link" onClick={()=>this.handlePageNum(page)}>{page}</a>
+                </li>
+            ))}
+        </ul>
+        </nav>
     </div>
     );
   }
