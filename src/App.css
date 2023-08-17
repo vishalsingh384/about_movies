@@ -36,3 +36,72 @@
     transform: rotate(360deg);
   }
 }
+
+*{
+  box-sizing: border-box;
+}
+body{
+  padding: 0;
+  margin: 0;
+}
+
+.banner-card{
+  background-color: #ffffff;
+}
+.banner-img{
+  height: 70vh;
+  width: 100%;
+}
+.banner-title{
+  color: white;
+  position: absolute;
+  top: 45vh;
+  left: 5vw;
+  font-size: 1.5rem;
+}
+.banner-text{
+  position: absolute;
+  color: white;
+  top: 55vh;
+  left: 5vw;
+  margin-right: 5vw;
+}
+/* --------------------------------------------- */
+
+.movies-list{
+  display: flex;
+  flex-wrap: wrap;
+  padding: 1rem;
+  justify-content: center;
+}
+.movie-img{
+  height:40vh;
+}
+.movie-card{
+  width: 20vw;
+  margin: 1rem;
+  color: white;
+  box-shadow: 1.5px 1.5px 10px darkgray;
+  position: relative;
+}
+.movie-title{
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+}
+.movie-button{
+  position: absolute;
+  top: 80%;
+}
+.button-wrapper{
+  display: flex;
+  justify-content: center;
+}
+
+/* ---------------------------------------------------------- */
+.favourites-list{
+  padding: 2rem;
+  }
+  .favourites-table{
+    padding: 2rem;
+  }
